@@ -253,45 +253,122 @@
     let editIndex = -1;
 
     window.onload = function() {
+        // Load Database
         let savedData = localStorage.getItem('db_observasi_ou');
         if (savedData) {
             try { database = JSON.parse(savedData); } catch(e) { database = []; }
             updateTable();
         }
 
-        document.getElementById('tanggal').value = new Date().toISOString().slice(0,10);
-
+        // Setup Opsi Jam & Menit
         let jamSelect = document.getElementById('jam');
         for (let i = 0; i < 24; i++) {
             let val = String(i).padStart(2, '0');
             jamSelect.add(new Option(val, val));
         }
-        jamSelect.value = String(new Date().getHours()).padStart(2, '0');
 
         let menitSelect = document.getElementById('menit');
         for (let i = 0; i < 60; i += 2) { 
             let val = String(i).padStart(2, '0');
             menitSelect.add(new Option(val, val));
         }
-        let nowMin = new Date().getMinutes();
-        menitSelect.value = String(nowMin - (nowMin % 2)).padStart(2, '0');
 
+        // Render Tombol-tombol UI
         renderButtons('keg-utama-opts', dataUtama, val => {
             selectedUtama = val;
             updateDropdownKedua(val);
         });
-
         renderButtons('tinggi-opts', dataTinggi, val => selectedTinggi = val);
         renderButtons('posisi-opts', dataPosisi, val => selectedPosisi = val);
         renderButtons('vokal-opts', dataVokal, val => selectedVokal = val);
-
         fillSelect('keg-sosial-select', dataSosial);
 
         let jarakSelect = document.getElementById('jarak-ou');
         jarakSelect.add(new Option("-", ""));
         dataJarak.forEach(j => jarakSelect.add(new Option(j, j)));
 
+        // --- FITUR BARU: KEMBALIKAN DRAF (ANTI REFRESH) ---
+        let draftBerhasilDipulihkan = restoreDraft();
+
+        // Jika tidak ada draf sebelumnya, atur waktu ke saat ini
+        if (!draftBerhasilDipulihkan) {
+            document.getElementById('tanggal').value = new Date().toISOString().slice(0,10);
+            jamSelect.value = String(new Date().getHours()).padStart(2, '0');
+            let nowMin = new Date().getMinutes();
+            menitSelect.value = String(nowMin - (nowMin % 2)).padStart(2, '0');
+        }
+
         renderTotalCount();
+
+        // Mulai Auto-Save ke Draf setiap 1 detik
+        setInterval(forceSaveDraft, 1000);
+    }
+
+    // --- FUNGSI AUTO-SAVE (DRAF) ---
+    function forceSaveDraft() {
+        // Jangan timpa draf observasi utama jika kita sedang masuk di mode Edit Data Lampau
+        if (editIndex !== -1) return; 
+
+        let draft = {
+            tanggal: document.getElementById('tanggal').value,
+            jam: document.getElementById('jam').value,
+            menit: document.getElementById('menit').value,
+            fokal: document.getElementById('id-fokal').value,
+            observer: document.getElementById('observer').value,
+            lokasi: document.getElementById('lokasi').value,
+            utama: selectedUtama,
+            kedua: document.getElementById('keg-kedua').value,
+            pakan: document.getElementById('species-pakan').value,
+            tinggi: selectedTinggi,
+            posisi: selectedPosisi,
+            vokal: selectedVokal,
+            party: document.getElementById('party-size').value,
+            sosial: document.getElementById('keg-sosial').value,
+            jarak: document.getElementById('jarak-ou').value,
+            ouLain: document.getElementById('ou-lain').value,
+            gps: document.getElementById('gps').value,
+            catatan: document.getElementById('catatan').value
+        };
+        localStorage.setItem('draft_observasi_ou', JSON.stringify(draft));
+    }
+
+    // --- FUNGSI LOAD DRAF ---
+    function restoreDraft() {
+        let draftStr = localStorage.getItem('draft_observasi_ou');
+        if (draftStr) {
+            try {
+                let draft = JSON.parse(draftStr);
+                document.getElementById('tanggal').value = draft.tanggal || "";
+                document.getElementById('jam').value = draft.jam || String(new Date().getHours()).padStart(2, '0');
+                document.getElementById('menit').value = draft.menit || "00";
+                document.getElementById('id-fokal').value = draft.fokal || "";
+                document.getElementById('observer').value = draft.observer || "";
+                document.getElementById('lokasi').value = draft.lokasi || "";
+
+                selectedUtama = draft.utama || "";
+                updateActiveButtonVisual('keg-utama-opts', selectedUtama);
+                updateDropdownKedua(selectedUtama);
+
+                document.getElementById('keg-kedua').value = draft.kedua || "";
+                document.getElementById('species-pakan').value = draft.pakan || "";
+
+                selectedTinggi = draft.tinggi || ""; updateActiveButtonVisual('tinggi-opts', selectedTinggi);
+                selectedPosisi = draft.posisi || ""; updateActiveButtonVisual('posisi-opts', selectedPosisi);
+                selectedVokal = draft.vokal || ""; updateActiveButtonVisual('vokal-opts', selectedVokal);
+
+                document.getElementById('party-size').value = draft.party || "";
+                document.getElementById('keg-sosial').value = draft.sosial || "";
+                document.getElementById('jarak-ou').value = draft.jarak || "";
+                document.getElementById('ou-lain').value = draft.ouLain || "";
+                document.getElementById('gps').value = draft.gps || "";
+                document.getElementById('catatan').value = draft.catatan || "";
+                
+                return true;
+            } catch(e) {
+                return false;
+            }
+        }
+        return false;
     }
 
     function renderButtons(containerId, dataArray, assignFn) {
@@ -452,7 +529,7 @@
             document.getElementById('jam').value = String(nextJam).padStart(2, '0');
             document.getElementById('menit').value = String(nextMenit).padStart(2, '0');
 
-            // FUNGSI RESET DIHAPUS - DATA SEBELUMNYA AKAN TETAP BERTAHAN DI FORM
+            forceSaveDraft(); // Langsung perbarui Draf (Waktu +2 menit yang baru)
             
             flashSavedTime("Data tersimpan ✔ — lanjut ke " + String(nextJam).padStart(2,'0') + ":" + String(nextMenit).padStart(2,'0'));
         }
@@ -525,6 +602,8 @@
         document.getElementById('btn-excel').style.display = 'block';
         document.getElementById('btn-reset').style.display = 'block';
         document.getElementById('btn-batal').style.display = 'none';
+        
+        restoreDraft(); // Kembalikan form ke setup observasi saat ini yang belum tersimpan
     }
 
     function HapusData(index) {
@@ -600,11 +679,9 @@
 
     function ResetData() {
         if (confirm("YAKIN INGIN MENGHAPUS SEMUA DATA?\nPastikan data sudah diunduh ke Excel sebelum menekan OK!")) {
-            database = [];
             localStorage.removeItem('db_observasi_ou');
-            updateTable();
-            persist();
-            alert("Data berhasil dibersihkan. Siap untuk observasi baru!");
+            localStorage.removeItem('draft_observasi_ou'); // Hapus juga memori draf-nya
+            location.reload(); // Memuat ulang halaman agar benar-benar bersih dan kembali ke awal
         }
     }
 </script>
