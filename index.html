@@ -225,7 +225,7 @@
     const dataUtama = ["F","CF","SF","TF","N","S","O","T","R","L","U","OD","SD","V"];
     const dataTinggi = ["0","1-5","6-10","11-15","16-20","21-25","26-30","31-35","36-40","41-45","46-50"];
     const dataPosisi = ["TR","LI","G","W","N"];
-    const dataVokal = ["LC","KS","MIP","SCRM","GRU","GRB","PGR","GOR","HW","CY","MCS","NSM","LRK","V"]; // removed duplicate "KS"
+    const dataVokal = ["LC","KS","MIP","SCRM","GRU","GRB","PGR","GOR","HW","CY","MCS","NSM","LRK","V"]; 
     const dataSosial = ["TO/","FO/","TA/","TP/"];
     const dataJarak = ["0","2","5","10","20","30",">30"];
 
@@ -269,7 +269,7 @@
         jamSelect.value = String(new Date().getHours()).padStart(2, '0');
 
         let menitSelect = document.getElementById('menit');
-        for (let i = 0; i < 60; i += 2) { // FIX: was <=60 causing an invalid "60" option
+        for (let i = 0; i < 60; i += 2) { 
             let val = String(i).padStart(2, '0');
             menitSelect.add(new Option(val, val));
         }
@@ -294,7 +294,6 @@
         renderTotalCount();
     }
 
-    // Toggle-able button groups
     function renderButtons(containerId, dataArray, assignFn) {
         let container = document.getElementById(containerId);
         container.innerHTML = '';
@@ -349,7 +348,6 @@
         if (!val) return;
         let inputField = document.getElementById('keg-kedua');
         if (val.startsWith('/')) {
-            // append modifier without duplicating it
             if (!inputField.value.includes(val)) inputField.value = inputField.value + val;
         } else {
             inputField.value = val;
@@ -445,7 +443,6 @@
         } else {
             database.push(rowData);
 
-            // FIX: rollover logic — was ">60" (off-by-one), now correct ">=60"
             let nextMenit = parseInt(menit) + 2;
             let nextJam = parseInt(jam);
             if (nextMenit >= 60) {
@@ -455,31 +452,13 @@
             document.getElementById('jam').value = String(nextJam).padStart(2, '0');
             document.getElementById('menit').value = String(nextMenit).padStart(2, '0');
 
-            // reset per-entry fields but keep meta (tanggal, fokal, observer, lokasi)
-            resetEntryFields();
+            // FUNGSI RESET DIHAPUS - DATA SEBELUMNYA AKAN TETAP BERTAHAN DI FORM
+            
             flashSavedTime("Data tersimpan ✔ — lanjut ke " + String(nextJam).padStart(2,'0') + ":" + String(nextMenit).padStart(2,'0'));
         }
 
         updateTable();
         persist();
-    }
-
-    function resetEntryFields() {
-        selectedUtama = ""; selectedTinggi = ""; selectedPosisi = ""; selectedVokal = "";
-        updateActiveButtonVisual('keg-utama-opts', "");
-        updateActiveButtonVisual('tinggi-opts', "");
-        updateActiveButtonVisual('posisi-opts', "");
-        updateActiveButtonVisual('vokal-opts', "");
-        updateDropdownKedua("");
-        document.getElementById('keg-kedua').value = "";
-        document.getElementById('species-pakan').value = "";
-        document.getElementById('party-size').value = "";
-        document.getElementById('keg-sosial').value = "";
-        document.getElementById('jarak-ou').value = "";
-        document.getElementById('ou-lain').value = "";
-        document.getElementById('gps').value = "";
-        document.getElementById('gps-acc').textContent = "";
-        document.getElementById('catatan').value = "";
     }
 
     function flashSavedTime(msg) {
@@ -591,7 +570,6 @@
         csvContent += FIELD_LABELS.join(",") + "\n";
 
         database.forEach(row => {
-            // FIX: String() wrap so numeric fields (party) don't crash .replace()
             let line = rowToArray(row).map(val => `"${String(val).replace(/"/g, '""')}"`).join(",");
             csvContent += line + "\n";
         });
@@ -613,7 +591,6 @@
         let sheetData = [FIELD_LABELS, ...rows];
         let ws = XLSX.utils.aoa_to_sheet(sheetData);
 
-        // basic column width tuning
         ws['!cols'] = FIELD_LABELS.map(label => ({ wch: Math.max(10, label.length + 2) }));
 
         let wb = XLSX.utils.book_new();
