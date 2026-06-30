@@ -1,169 +1,125 @@
 <!DOCTYPE html>
 <html lang="id">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Orangutan Observation Logger</title>
-    <style>
-        :root {
-            --primary: #2e7d32;
-            --secondary: #efebe9;
-            --text: #3e2723;
-        }
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-            background-color: #f5f5f5;
-            color: var(--text);
-            margin: 0;
-            padding: 10px;
-        }
-        .container {
-            max-width: 600px;
-            margin: 0 auto;
-            background: white;
-            padding: 15px;
-            border-radius: 8px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-        }
-        h2 {
-            text-align: center;
-            color: var(--primary);
-            margin-top: 0;
-        }
-        .form-group {
-            margin-bottom: 12px;
-        }
-        label {
-            display: block;
-            font-weight: bold;
-            margin-bottom: 4px;
-            font-size: 0.9rem;
-        }
-        select, input, textarea {
-            width: 100%;
-            padding: 8px;
-            border: 1px solid #ccc;
-            border-radius: 4px;
-            box-sizing: border-box;
-            font-size: 1rem;
-        }
-        .combo-box {
-            display: flex; 
-            gap: 5px;
-        }
-        .combo-box select {
-            flex: 1;
-            background-color: #f9fbe7;
-        }
-        .combo-box input {
-            flex: 2;
-        }
-        .grid-buttons {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(60px, 1fr));
-            gap: 5px;
-            max-height: 120px;
-            overflow-y: auto;
-            border: 1px solid #ddd;
-            padding: 5px;
-            border-radius: 4px;
-            background: #fafafa;
-        }
-        .btn-opt {
-            background: var(--secondary);
-            border: 1px solid #bcaaa4;
-            padding: 6px;
-            font-size: 0.8rem;
-            border-radius: 4px;
-            cursor: pointer;
-            text-align: center;
-            font-weight: bold;
-        }
-        .btn-opt.active {
-            background: var(--primary);
-            color: white;
-            border-color: var(--primary);
-        }
-        .btn-main {
-            background: var(--primary);
-            color: white;
-            border: none;
-            padding: 12px;
-            font-size: 1rem;
-            width: 100%;
-            border-radius: 4px;
-            cursor: pointer;
-            font-weight: bold;
-            margin-top: 10px;
-        }
-        .btn-download {
-            background: #1565c0;
-            margin-top: 5px;
-        }
-        .btn-reset {
-            background: #c62828;
-            margin-top: 5px;
-        }
-        .btn-batal {
-            background: #757575;
-            margin-top: 5px;
-            display: none;
-        }
-        .log-table-container {
-            margin-top: 20px;
-            overflow-x: auto;
-        }
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            font-size: 0.75rem;
-        }
-        th, td {
-            border: 1px solid #ddd;
-            padding: 6px;
-            text-align: left;
-        }
-        th {
-            background-color: var(--primary);
-            color: white;
-        }
-        .action-btn {
-            padding: 4px 6px;
-            margin-bottom: 2px;
-            border: none;
-            border-radius: 4px;
-            cursor: pointer;
-            font-weight: bold;
-            font-size: 0.7rem;
-            width: 100%;
-        }
-        .btn-edit { background: #fbc02d; color: #000; }
-        .btn-delete { background: #e53935; color: #fff; }
-        .edit-mode-active {
-            border: 2px dashed #fbc02d !important;
-            padding: 10px;
-            background: #fffde7;
-        }
-    </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Orangutan Observation Logger</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<style>
+    :root {
+        --primary: #2e7d32;
+        --primary-dark: #1b5e20;
+        --secondary: #efebe9;
+        --text: #3e2723;
+        --warn: #c62828;
+    }
+    * { box-sizing: border-box; }
+    body {
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+        background-color: #f0f2ef;
+        color: var(--text);
+        margin: 0;
+        padding: 10px;
+    }
+    .container {
+        max-width: 640px;
+        margin: 0 auto;
+        background: white;
+        padding: 15px;
+        border-radius: 10px;
+        box-shadow: 0 2px 6px rgba(0,0,0,0.12);
+    }
+    h2 { text-align: center; color: var(--primary); margin-top: 0; }
+    h3 { color: var(--primary-dark); border-bottom: 2px solid var(--secondary); padding-bottom: 4px; margin-top: 18px; font-size: 0.95rem; }
+    .form-group { margin-bottom: 12px; }
+    label { display: block; font-weight: bold; margin-bottom: 4px; font-size: 0.85rem; }
+    .req::after { content: " *"; color: var(--warn); }
+    select, input, textarea {
+        width: 100%; padding: 9px; border: 1px solid #ccc; border-radius: 5px;
+        font-size: 1rem; background: white;
+    }
+    select:invalid, input:invalid { border-color: #ccc; }
+    .field-error { border-color: var(--warn) !important; background: #fff3f2 !important; }
+    .combo-box { display: flex; gap: 5px; }
+    .combo-box select { flex: 1; background-color: #f9fbe7; }
+    .combo-box input { flex: 2; }
+    .grid-buttons {
+        display: grid; grid-template-columns: repeat(auto-fill, minmax(56px, 1fr));
+        gap: 5px; max-height: 130px; overflow-y: auto; border: 1px solid #ddd;
+        padding: 6px; border-radius: 5px; background: #fafafa;
+    }
+    .btn-opt {
+        background: var(--secondary); border: 1px solid #bcaaa4; padding: 7px 4px;
+        font-size: 0.8rem; border-radius: 5px; cursor: pointer; text-align: center; font-weight: bold;
+    }
+    .btn-opt.active { background: var(--primary); color: white; border-color: var(--primary-dark); }
+    .btn-main {
+        background: var(--primary); color: white; border: none; padding: 13px;
+        font-size: 1rem; width: 100%; border-radius: 6px; cursor: pointer; font-weight: bold; margin-top: 10px;
+    }
+    .btn-main:active { transform: scale(0.98); }
+    .btn-download { background: #1565c0; }
+    .btn-download2 { background: #2e7d32; }
+    .btn-reset { background: var(--warn); }
+    .btn-batal { background: #757575; display: none; }
+    .row2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+    .summary-bar {
+        display: flex; justify-content: space-between; align-items: center;
+        background: var(--secondary); padding: 8px 12px; border-radius: 6px; margin-top: 6px; font-size: 0.85rem;
+    }
+    .log-table-container { margin-top: 20px; overflow-x: auto; }
+    table { width: 100%; border-collapse: collapse; font-size: 0.72rem; }
+    th, td { border: 1px solid #ddd; padding: 5px; text-align: left; white-space: nowrap; }
+    th { background-color: var(--primary); color: white; position: sticky; top: 0; }
+    .action-btn { padding: 4px 6px; margin-bottom: 2px; border: none; border-radius: 4px; cursor: pointer; font-weight: bold; font-size: 0.7rem; width: 100%; }
+    .btn-edit { background: #fbc02d; color: #000; }
+    .btn-delete { background: #e53935; color: #fff; }
+    .edit-mode-active { border: 2px dashed #fbc02d !important; padding: 10px; background: #fffde7; }
+    .hint { font-size: 0.72rem; color: #777; margin-top: 2px; }
+    .meta-box { background: #e8f5e9; padding: 10px; border-radius: 6px; margin-bottom: 14px; }
+</style>
 </head>
 <body>
 
 <div class="container" id="form-container">
-    <h2 id="form-title">Orangutan Observation Log</h2>
-    
-    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+    <h2 id="form-title">🦧 Orangutan Observation Log</h2>
+
+    <div class="meta-box">
+        <div class="row2">
+            <div class="form-group">
+                <label class="req">Tanggal</label>
+                <input type="date" id="tanggal">
+            </div>
+            <div class="form-group">
+                <label class="req">ID / Nama Fokal (OU)</label>
+                <input type="text" id="id-fokal" placeholder="cth: Sumi, Jantan-01">
+            </div>
+        </div>
+        <div class="row2">
+            <div class="form-group">
+                <label>Nama Observer</label>
+                <input type="text" id="observer" placeholder="Nama pencatat">
+            </div>
+            <div class="form-group">
+                <label>Lokasi / Stasiun</label>
+                <input type="text" id="lokasi" placeholder="cth: Tuanan, Block A">
+            </div>
+        </div>
+    </div>
+
+    <div class="row2">
         <div class="form-group">
-            <label>Jam (24 Jam)</label>
+            <label class="req">Jam (24 Jam)</label>
             <select id="jam"></select>
         </div>
         <div class="form-group">
-            <label>Menit</label>
+            <label class="req">Menit</label>
             <select id="menit"></select>
         </div>
     </div>
 
     <div class="form-group">
-        <label>Kegiatan Utama</label>
+        <label class="req">Kegiatan Utama</label>
         <div class="grid-buttons" id="keg-utama-opts"></div>
     </div>
 
@@ -175,6 +131,7 @@
             </select>
             <input type="text" id="keg-kedua" placeholder="Ketik atau pilih list...">
         </div>
+        <div class="hint">Untuk kode modifier (diawali "/"), boleh pilih lebih dari satu — akan digabung otomatis.</div>
     </div>
 
     <div class="form-group">
@@ -197,15 +154,15 @@
         <div class="grid-buttons" id="vokal-opts"></div>
     </div>
 
-    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+    <div class="row2">
         <div class="form-group">
             <label>Party Size</label>
-            <input type="number" id="party-size" placeholder="Angka...">
+            <input type="number" id="party-size" min="0" step="1" placeholder="Angka...">
         </div>
         <div class="form-group">
             <label>Kegiatan Sosial</label>
             <div class="combo-box" style="flex-direction: column;">
-                <select id="keg-sosial-select" onchange="document.getElementById('keg-sosial').value = this.value; this.value='';">
+                <select id="keg-sosial-select" onchange="handleSelectSosial(this)">
                     <option value="">- Pilih -</option>
                 </select>
                 <input type="text" id="keg-sosial" placeholder="Ketik / pilih...">
@@ -213,7 +170,7 @@
         </div>
     </div>
 
-    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+    <div class="row2">
         <div class="form-group">
             <label>Jarak OU Lain (m)</label>
             <select id="jarak-ou"></select>
@@ -227,9 +184,10 @@
     <div class="form-group">
         <label>Titik GPS</label>
         <div style="display: flex; gap: 5px;">
-            <input type="text" id="gps" placeholder="Latitude, Longitude">
-            <button type="button" onclick="getGPS()" style="width: auto; padding: 0 10px; font-size: 1.2rem;">📍</button>
+            <input type="text" id="gps" placeholder="Latitude, Longitude" readonly>
+            <button type="button" onclick="getGPS()" style="width: auto; padding: 0 14px; font-size: 1.2rem;">📍</button>
         </div>
+        <div class="hint" id="gps-acc"></div>
     </div>
 
     <div class="form-group">
@@ -237,17 +195,24 @@
         <textarea id="catatan" rows="2" placeholder="Catatan tambahan..."></textarea>
     </div>
 
-    <button class="btn-main" id="btn-simpan" onclick="SimpanData()">SIMPAN DATA (NEXT 2 MIN)</button>
-    <button class="btn-main btn-batal" id="btn-batal" onclick="BatalEdit()">BATAL EDIT</button>
-    <button class="btn-main btn-download" id="btn-excel" onclick="UnduhExcel()">UNDUH EXCEL (CSV)</button>
-    <button class="btn-main btn-reset" id="btn-reset" onclick="ResetData()">RESET DATA OBSERVASI</button>
+    <button class="btn-main" id="btn-simpan" onclick="SimpanData()">💾 SIMPAN DATA (NEXT 2 MIN)</button>
+    <button class="btn-main btn-batal" id="btn-batal" onclick="BatalEdit()">✖ BATAL EDIT</button>
+
+    <div class="summary-bar">
+        <span>Total data: <b id="total-count">0</b></span>
+        <span id="last-saved-time"></span>
+    </div>
+
+    <button class="btn-main btn-download2" id="btn-xlsx" onclick="UnduhXLSX()">📊 UNDUH EXCEL (.xlsx)</button>
+    <button class="btn-main btn-download" id="btn-excel" onclick="UnduhExcel()">📄 UNDUH CSV</button>
+    <button class="btn-main btn-reset" id="btn-reset" onclick="ResetData()">🗑 RESET DATA OBSERVASI</button>
 
     <div class="log-table-container">
         <h3>Data Tersimpan (Aman dari Refresh)</h3>
         <table id="logTable">
             <thead>
                 <tr>
-                    <th>Waktu</th><th>Utama</th><th>Kedua</th><th>Pakan</th><th>Tinggi</th><th>Posisi</th><th>Vokal</th><th>Party</th><th>Sosial</th><th>Jarak</th><th>OU Lain</th><th>GPS</th><th>Catatan</th><th>Aksi</th>
+                    <th>Tgl</th><th>Waktu</th><th>Fokal</th><th>Utama</th><th>Kedua</th><th>Pakan</th><th>Tinggi</th><th>Posisi</th><th>Vokal</th><th>Party</th><th>Sosial</th><th>Jarak</th><th>OU Lain</th><th>GPS</th><th>Catatan</th><th>Aksi</th>
                 </tr>
             </thead>
             <tbody></tbody>
@@ -256,15 +221,14 @@
 </div>
 
 <script>
-    // DATA MASTER
+    // ============ DATA MASTER ============
     const dataUtama = ["F","CF","SF","TF","N","S","O","T","R","L","U","OD","SD","V"];
     const dataTinggi = ["0","1-5","6-10","11-15","16-20","21-25","26-30","31-35","36-40","41-45","46-50"];
     const dataPosisi = ["TR","LI","G","W","N"];
-    const dataVokal = ["LC","KS","MIP","SCRM","GRU","GRB","PGR","GOR","HW","CY","MCS","NSM","LRK","V","KS"];
+    const dataVokal = ["LC","KS","MIP","SCRM","GRU","GRB","PGR","GOR","HW","CY","MCS","NSM","LRK","V"]; // removed duplicate "KS"
     const dataSosial = ["TO/","FO/","TA/","TP/"];
     const dataJarak = ["0","2","5","10","20","30",">30"];
 
-    // KATEGORISASI KEGIATAN KEDUA
     const mappingKegiatanKedua = {
         "F": ["FR","FUM","/P","/S","/SK","/WH","/ES","/U","FL","FLB","L","LS","E","PI","BK","STM","RT","IV","HY","FG","M","SL","RW","SAP","W","SUSU","PF","UF"],
         "CF": ["FR","FUM","/P","/S","/SK","/WH","/ES","/U","FL","FLB","L","LS","E","PI","BK","STM","RT","IV","HY","FG","M","SL","RW","SAP","W","SUSU","PF","UF"],
@@ -277,40 +241,46 @@
         "O": ["YW","GB","ME","/FUR","DU"],
         "T": ["TT","CLA","CLI","MBR","BR","UTC","QW","BI"],
         "R": ["SI","ST","LD","HA","Q"],
-        "V": [], 
-        "L": [], 
-        "U": []  
+        "V": [],
+        "L": [],
+        "U": []
     };
+
+    const FIELD_LABELS = ["Tanggal","Waktu","ID Fokal","Observer","Lokasi","Kegiatan Utama","Kegiatan Kedua","Species Pakan","Tinggi Fokal","Posisi Fokal","Vokalisasi","Party Size","Kegiatan Sosial","Jarak OU","OU Lain","GPS","Catatan"];
 
     let database = [];
     let selectedUtama = "", selectedTinggi = "", selectedPosisi = "", selectedVokal = "";
-    let editIndex = -1; 
+    let editIndex = -1;
 
     window.onload = function() {
         let savedData = localStorage.getItem('db_observasi_ou');
         if (savedData) {
-            database = JSON.parse(savedData);
-            updateTable(); 
+            try { database = JSON.parse(savedData); } catch(e) { database = []; }
+            updateTable();
         }
-        
+
+        document.getElementById('tanggal').value = new Date().toISOString().slice(0,10);
+
         let jamSelect = document.getElementById('jam');
-        for(let i=0; i<24; i++) {
+        for (let i = 0; i < 24; i++) {
             let val = String(i).padStart(2, '0');
             jamSelect.add(new Option(val, val));
         }
         jamSelect.value = String(new Date().getHours()).padStart(2, '0');
 
         let menitSelect = document.getElementById('menit');
-        for(let i=0; i<=60; i+=2) {
+        for (let i = 0; i < 60; i += 2) { // FIX: was <=60 causing an invalid "60" option
             let val = String(i).padStart(2, '0');
             menitSelect.add(new Option(val, val));
         }
+        let nowMin = new Date().getMinutes();
+        menitSelect.value = String(nowMin - (nowMin % 2)).padStart(2, '0');
 
         renderButtons('keg-utama-opts', dataUtama, val => {
             selectedUtama = val;
-            updateDropdownKedua(val); 
+            updateDropdownKedua(val);
         });
-        
+
         renderButtons('tinggi-opts', dataTinggi, val => selectedTinggi = val);
         renderButtons('posisi-opts', dataPosisi, val => selectedPosisi = val);
         renderButtons('vokal-opts', dataVokal, val => selectedVokal = val);
@@ -320,9 +290,11 @@
         let jarakSelect = document.getElementById('jarak-ou');
         jarakSelect.add(new Option("-", ""));
         dataJarak.forEach(j => jarakSelect.add(new Option(j, j)));
+
+        renderTotalCount();
     }
 
-    // --- FUNGSI PERBAIKAN: TOMBOL BISA DI-KLIK UNTUK BATAL PILIH (TOGGLE) ---
+    // Toggle-able button groups
     function renderButtons(containerId, dataArray, assignFn) {
         let container = document.getElementById(containerId);
         container.innerHTML = '';
@@ -332,17 +304,16 @@
             btn.textContent = item;
             btn.type = 'button';
             btn.onclick = function() {
-                // Jika tombol yang diklik sudah aktif (berwarna hijau)
                 if (btn.classList.contains('active')) {
-                    btn.classList.remove('active'); // Matikan warna hijau
-                    assignFn(""); // Kosongkan data penyimpanannya
-                } 
-                // Jika tombol belum aktif (berubah pilihan)
-                else {
+                    btn.classList.remove('active');
+                    assignFn("");
+                    if (containerId === 'keg-utama-opts') updateDropdownKedua("");
+                } else {
                     container.querySelectorAll('.btn-opt').forEach(b => b.classList.remove('active'));
-                    btn.classList.add('active'); // Nyalakan warna hijau
-                    assignFn(item); // Simpan datanya
+                    btn.classList.add('active');
+                    assignFn(item);
                 }
+                container.classList.remove('field-error');
             }
             container.appendChild(btn);
         });
@@ -351,7 +322,7 @@
     function updateActiveButtonVisual(containerId, value) {
         let container = document.getElementById(containerId);
         container.querySelectorAll('.btn-opt').forEach(b => {
-            if(value !== "" && b.textContent === value) b.classList.add('active');
+            if (value !== "" && b.textContent === value) b.classList.add('active');
             else b.classList.remove('active');
         });
     }
@@ -359,77 +330,100 @@
     function fillSelect(selectId, dataArray) {
         let select = document.getElementById(selectId);
         select.innerHTML = '<option value="">- Pilih -</option>';
-        dataArray.forEach(item => {
-            select.add(new Option(item, item));
-        });
+        dataArray.forEach(item => select.add(new Option(item, item)));
     }
 
     function updateDropdownKedua(utamaVal) {
-        // Jika utamaVal dikosongkan (karena batal klik), targetData otomatis []
         let targetData = mappingKegiatanKedua[utamaVal] || [];
         let select = document.getElementById('keg-kedua-select');
-        
         select.innerHTML = '<option value="">- Pilih -</option>';
         if (targetData.length === 0) {
             select.options[0].text = "- Tidak ada opsi -";
         } else {
-            targetData.forEach(item => {
-                select.add(new Option(item, item));
-            });
+            targetData.forEach(item => select.add(new Option(item, item)));
         }
     }
 
     function handleSelectKedua(selectObj) {
         let val = selectObj.value;
-        if(!val) return;
-        
+        if (!val) return;
         let inputField = document.getElementById('keg-kedua');
         if (val.startsWith('/')) {
-            inputField.value = inputField.value + val;
+            // append modifier without duplicating it
+            if (!inputField.value.includes(val)) inputField.value = inputField.value + val;
         } else {
             inputField.value = val;
         }
-        selectObj.value = ''; 
+        selectObj.value = '';
     }
 
-    // --- FUNGSI PERBAIKAN: GPS WAKTU DITAMBAH JADI 60 DETIK ---
-    function getGPS() {
-        if (navigator.geolocation) {
-            let gpsInput = document.getElementById('gps');
-            gpsInput.value = "Mencari satelit... (Tahan posisi)"; 
+    function handleSelectSosial(selectObj) {
+        let val = selectObj.value;
+        if (!val) return;
+        document.getElementById('keg-sosial').value = val;
+        selectObj.value = '';
+    }
 
-            navigator.geolocation.getCurrentPosition(
-                position => {
-                    let lat = position.coords.latitude.toFixed(6);
-                    let lon = position.coords.longitude.toFixed(6);
-                    gpsInput.value = lat + ", " + lon;
-                }, 
-                error => {
-                    let errorMessage = "Gagal mengambil GPS.";
-                    if(error.code === 1) errorMessage = "Izin lokasi HP ditolak.";
-                    if(error.code === 2) errorMessage = "Sinyal satelit tidak tembus. Coba geser sedikit ke area terbuka.";
-                    if(error.code === 3) errorMessage = "Timeout (60 detik). Kanopi terlalu rapat, geser ke area terbuka lalu coba lagi.";
-                    
-                    alert(errorMessage);
-                    gpsInput.value = ""; 
-                }, 
-                {
-                    enableHighAccuracy: true, 
-                    timeout: 60000,           
-                    maximumAge: 0             
-                }
-            );
-        } else { 
-            alert("Browser tidak mendukung fitur GPS."); 
+    function getGPS() {
+        if (!navigator.geolocation) { alert("Browser tidak mendukung fitur GPS."); return; }
+        let gpsInput = document.getElementById('gps');
+        let accLabel = document.getElementById('gps-acc');
+        gpsInput.value = "Mencari satelit... (Tahan posisi)";
+        accLabel.textContent = "";
+
+        navigator.geolocation.getCurrentPosition(
+            position => {
+                let lat = position.coords.latitude.toFixed(6);
+                let lon = position.coords.longitude.toFixed(6);
+                gpsInput.value = lat + ", " + lon;
+                accLabel.textContent = "Akurasi: ±" + Math.round(position.coords.accuracy) + " m";
+            },
+            error => {
+                let errorMessage = "Gagal mengambil GPS.";
+                if (error.code === 1) errorMessage = "Izin lokasi HP ditolak.";
+                if (error.code === 2) errorMessage = "Sinyal satelit tidak tembus. Coba geser sedikit ke area terbuka.";
+                if (error.code === 3) errorMessage = "Timeout (60 detik). Kanopi terlalu rapat, geser ke area terbuka lalu coba lagi.";
+                alert(errorMessage);
+                gpsInput.value = "";
+            },
+            { enableHighAccuracy: true, timeout: 60000, maximumAge: 0 }
+        );
+    }
+
+    function clearFieldErrors() {
+        document.getElementById('tanggal').classList.remove('field-error');
+        document.getElementById('id-fokal').classList.remove('field-error');
+        document.getElementById('keg-utama-opts').classList.remove('field-error');
+    }
+
+    function validateForm() {
+        clearFieldErrors();
+        let ok = true;
+        if (!document.getElementById('tanggal').value) {
+            document.getElementById('tanggal').classList.add('field-error'); ok = false;
         }
+        if (!document.getElementById('id-fokal').value.trim()) {
+            document.getElementById('id-fokal').classList.add('field-error'); ok = false;
+        }
+        if (!selectedUtama) {
+            document.getElementById('keg-utama-opts').classList.add('field-error'); ok = false;
+        }
+        if (!ok) alert("Mohon lengkapi field bertanda (*) sebelum menyimpan: Tanggal, ID Fokal, dan Kegiatan Utama.");
+        return ok;
     }
 
     function SimpanData() {
+        if (!validateForm()) return;
+
         let jam = document.getElementById('jam').value;
         let menit = document.getElementById('menit').value;
-        
+
         let rowData = {
+            tanggal: document.getElementById('tanggal').value,
             waktu: `${jam}:${menit}`,
+            fokal: document.getElementById('id-fokal').value.trim(),
+            observer: document.getElementById('observer').value.trim(),
+            lokasi: document.getElementById('lokasi').value.trim(),
             utama: selectedUtama,
             kedua: document.getElementById('keg-kedua').value,
             pakan: document.getElementById('species-pakan').value,
@@ -446,38 +440,80 @@
 
         if (editIndex >= 0) {
             database[editIndex] = rowData;
-            alert("Perubahan data berhasil disimpan!");
-            BatalEdit(); 
+            BatalEdit();
+            flashSavedTime("Perubahan disimpan ✔");
         } else {
             database.push(rowData);
-            
+
+            // FIX: rollover logic — was ">60" (off-by-one), now correct ">=60"
             let nextMenit = parseInt(menit) + 2;
             let nextJam = parseInt(jam);
-            if (nextMenit > 60) {
+            if (nextMenit >= 60) {
                 nextMenit = 0;
                 nextJam = (nextJam + 1) % 24;
             }
             document.getElementById('jam').value = String(nextJam).padStart(2, '0');
             document.getElementById('menit').value = String(nextMenit).padStart(2, '0');
-            alert(`Data tersimpan. Waktu berlanjut ke menit berikutnya.`);
+
+            // reset per-entry fields but keep meta (tanggal, fokal, observer, lokasi)
+            resetEntryFields();
+            flashSavedTime("Data tersimpan ✔ — lanjut ke " + String(nextJam).padStart(2,'0') + ":" + String(nextMenit).padStart(2,'0'));
         }
 
         updateTable();
+        persist();
+    }
+
+    function resetEntryFields() {
+        selectedUtama = ""; selectedTinggi = ""; selectedPosisi = ""; selectedVokal = "";
+        updateActiveButtonVisual('keg-utama-opts', "");
+        updateActiveButtonVisual('tinggi-opts', "");
+        updateActiveButtonVisual('posisi-opts', "");
+        updateActiveButtonVisual('vokal-opts', "");
+        updateDropdownKedua("");
+        document.getElementById('keg-kedua').value = "";
+        document.getElementById('species-pakan').value = "";
+        document.getElementById('party-size').value = "";
+        document.getElementById('keg-sosial').value = "";
+        document.getElementById('jarak-ou').value = "";
+        document.getElementById('ou-lain').value = "";
+        document.getElementById('gps').value = "";
+        document.getElementById('gps-acc').textContent = "";
+        document.getElementById('catatan').value = "";
+    }
+
+    function flashSavedTime(msg) {
+        let el = document.getElementById('last-saved-time');
+        el.textContent = msg;
+        setTimeout(() => { el.textContent = ""; }, 4000);
+    }
+
+    function persist() {
         localStorage.setItem('db_observasi_ou', JSON.stringify(database));
+        renderTotalCount();
+    }
+
+    function renderTotalCount() {
+        document.getElementById('total-count').textContent = database.length;
     }
 
     function EditData(index) {
         editIndex = index;
         let row = database[index];
 
-        let timeSplit = row.waktu.split(':');
+        document.getElementById('tanggal').value = row.tanggal || "";
+        document.getElementById('id-fokal').value = row.fokal || "";
+        document.getElementById('observer').value = row.observer || "";
+        document.getElementById('lokasi').value = row.lokasi || "";
+
+        let timeSplit = (row.waktu || "00:00").split(':');
         document.getElementById('jam').value = timeSplit[0];
         document.getElementById('menit').value = timeSplit[1];
-        
-        selectedUtama = row.utama; 
+
+        selectedUtama = row.utama;
         updateActiveButtonVisual('keg-utama-opts', selectedUtama);
-        updateDropdownKedua(selectedUtama); 
-        
+        updateDropdownKedua(selectedUtama);
+
         document.getElementById('keg-kedua').value = row.kedua;
         document.getElementById('species-pakan').value = row.pakan;
         selectedTinggi = row.tinggi; updateActiveButtonVisual('tinggi-opts', selectedTinggi);
@@ -491,8 +527,9 @@
         document.getElementById('catatan').value = row.catatan;
 
         document.getElementById('form-container').classList.add('edit-mode-active');
-        document.getElementById('form-title').textContent = "EDIT MODE - Data Ke-" + (index + 1);
-        document.getElementById('btn-simpan').textContent = "SIMPAN DATA EDIT";
+        document.getElementById('form-title').textContent = "✏️ EDIT MODE - Data Ke-" + (index + 1);
+        document.getElementById('btn-simpan').textContent = "💾 SIMPAN DATA EDIT";
+        document.getElementById('btn-xlsx').style.display = 'none';
         document.getElementById('btn-excel').style.display = 'none';
         document.getElementById('btn-reset').style.display = 'none';
         document.getElementById('btn-batal').style.display = 'block';
@@ -501,20 +538,21 @@
     }
 
     function BatalEdit() {
-        editIndex = -1; 
+        editIndex = -1;
         document.getElementById('form-container').classList.remove('edit-mode-active');
-        document.getElementById('form-title').textContent = "Orangutan Observation Log";
-        document.getElementById('btn-simpan').textContent = "SIMPAN DATA (NEXT 2 MIN)";
+        document.getElementById('form-title').textContent = "🦧 Orangutan Observation Log";
+        document.getElementById('btn-simpan').textContent = "💾 SIMPAN DATA (NEXT 2 MIN)";
+        document.getElementById('btn-xlsx').style.display = 'block';
         document.getElementById('btn-excel').style.display = 'block';
         document.getElementById('btn-reset').style.display = 'block';
         document.getElementById('btn-batal').style.display = 'none';
     }
 
     function HapusData(index) {
-        if(confirm("Yakin ingin menghapus data pada baris ini?")) {
-            database.splice(index, 1); 
+        if (confirm("Yakin ingin menghapus data pada baris ini?")) {
+            database.splice(index, 1);
             updateTable();
-            localStorage.setItem('db_observasi_ou', JSON.stringify(database)); 
+            persist();
         }
     }
 
@@ -523,9 +561,10 @@
         tbody.innerHTML = "";
         database.forEach((row, index) => {
             let r = tbody.insertRow();
-            Object.values(row).forEach(text => {
+            let cols = [row.tanggal,row.waktu,row.fokal,row.utama,row.kedua,row.pakan,row.tinggi,row.posisi,row.vokal,row.party,row.sosial,row.jarak,row.ouLain,row.gps,row.catatan];
+            cols.forEach(text => {
                 let cell = r.insertCell();
-                cell.textContent = text;
+                cell.textContent = (text === undefined || text === null) ? "" : text;
             });
             let cellAksi = r.insertCell();
             cellAksi.innerHTML = `
@@ -533,16 +572,27 @@
                 <button class="action-btn btn-delete" onclick="HapusData(${index})">Hapus</button>
             `;
         });
+        renderTotalCount();
+    }
+
+    function rowToArray(row) {
+        return [
+            row.tanggal||"", row.waktu||"", row.fokal||"", row.observer||"", row.lokasi||"",
+            row.utama||"", row.kedua||"", row.pakan||"", row.tinggi||"", row.posisi||"",
+            row.vokal||"", row.party||"", row.sosial||"", row.jarak||"", row.ouLain||"",
+            row.gps||"", row.catatan||""
+        ];
     }
 
     function UnduhExcel() {
-        if(database.length === 0) { alert("Belum ada data untuk diunduh."); return; }
-        
+        if (database.length === 0) { alert("Belum ada data untuk diunduh."); return; }
+
         let csvContent = "data:text/csv;charset=utf-8,";
-        csvContent += "Waktu,Kegiatan Utama,Kegiatan Kedua,Species Pakan,Tinggi Fokal,Posisi Fokal,Vokalisasi,Party Size,Kegiatan Sosial,Jarak OU,OU Lain,GPS,Catatan\n";
-        
+        csvContent += FIELD_LABELS.join(",") + "\n";
+
         database.forEach(row => {
-            let line = Object.values(row).map(val => `"${val.replace(/"/g, '""')}"`).join(",");
+            // FIX: String() wrap so numeric fields (party) don't crash .replace()
+            let line = rowToArray(row).map(val => `"${String(val).replace(/"/g, '""')}"`).join(",");
             csvContent += line + "\n";
         });
 
@@ -555,11 +605,28 @@
         document.body.removeChild(link);
     }
 
+    function UnduhXLSX() {
+        if (database.length === 0) { alert("Belum ada data untuk diunduh."); return; }
+        if (typeof XLSX === 'undefined') { alert("Library Excel gagal dimuat. Periksa koneksi internet, atau gunakan tombol Unduh CSV."); return; }
+
+        let rows = database.map(row => rowToArray(row));
+        let sheetData = [FIELD_LABELS, ...rows];
+        let ws = XLSX.utils.aoa_to_sheet(sheetData);
+
+        // basic column width tuning
+        ws['!cols'] = FIELD_LABELS.map(label => ({ wch: Math.max(10, label.length + 2) }));
+
+        let wb = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(wb, ws, "Observasi");
+        XLSX.writeFile(wb, `Observasi_Orangutan_${new Date().toISOString().slice(0,10)}.xlsx`);
+    }
+
     function ResetData() {
-        if(confirm("YAKIN INGIN MENGHAPUS SEMUA DATA?\nPastikan data sudah diunduh ke Excel sebelum menekan OK!")) {
-            database = []; 
-            localStorage.removeItem('db_observasi_ou'); 
-            updateTable(); 
+        if (confirm("YAKIN INGIN MENGHAPUS SEMUA DATA?\nPastikan data sudah diunduh ke Excel sebelum menekan OK!")) {
+            database = [];
+            localStorage.removeItem('db_observasi_ou');
+            updateTable();
+            persist();
             alert("Data berhasil dibersihkan. Siap untuk observasi baru!");
         }
     }
