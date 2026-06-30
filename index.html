@@ -536,15 +536,15 @@
         }
     }
     
-        // Fungsi Ambil GPS (Versi Akurasi Tinggi untuk Lapangan)
+        
+        // Fungsi Ambil GPS (Waktu Pencarian Diperpanjang)
     function getGPS() {
         if (navigator.geolocation) {
             let gpsInput = document.getElementById('gps');
-            gpsInput.value = "Mencari satelit..."; // Indikator loading
+            gpsInput.value = "Mencari satelit... (Tahan posisi)"; // Indikator loading
 
             navigator.geolocation.getCurrentPosition(
                 position => {
-                    // Mengambil Latitude & Longitude dengan 6 angka di belakang koma (format Decimal Degrees)
                     let lat = position.coords.latitude.toFixed(6);
                     let lon = position.coords.longitude.toFixed(6);
                     gpsInput.value = lat + ", " + lon;
@@ -552,16 +552,16 @@
                 error => {
                     let errorMessage = "Gagal mengambil GPS.";
                     if(error.code === 1) errorMessage = "Izin lokasi HP ditolak.";
-                    if(error.code === 2) errorMessage = "Sinyal satelit GPS tidak ditemukan. Pastikan GPS HP nyala & berada di tempat terbuka.";
-                    if(error.code === 3) errorMessage = "Waktu pencarian satelit habis (Timeout). Coba lagi.";
+                    if(error.code === 2) errorMessage = "Sinyal satelit tidak tembus. Coba geser sedikit ke area terbuka.";
+                    if(error.code === 3) errorMessage = "Timeout (60 detik). Kanopi terlalu rapat, geser ke area terbuka lalu coba lagi.";
                     
                     alert(errorMessage);
-                    gpsInput.value = ""; // Kosongkan jika gagal
+                    gpsInput.value = ""; 
                 }, 
                 {
-                    enableHighAccuracy: true, // Memaksa HP pakai satelit GPS murni (bukan jaringan seluler)
-                    timeout: 15000,           // Tunggu maksimal 15 detik untuk lock satelit
-                    maximumAge: 0             // Memaksa ambil titik baru, bukan data cache lama
+                    enableHighAccuracy: true, 
+                    timeout: 60000,           // PERUBAHAN: Diperpanjang jadi 60 detik (60000 ms)
+                    maximumAge: 0             
                 }
             );
         } else { 
